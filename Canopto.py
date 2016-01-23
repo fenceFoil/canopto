@@ -5,6 +5,7 @@ from pygame.locals import *
 from time import time
 import numpy
 from random import randint
+import pygame.surfarray as surfarray
 
 BLACK = (0,0,0)
 WHITE = (255,255,255)
@@ -18,6 +19,9 @@ class Canopto:
 		self.previewEnabled = previewEnabled
 		self.matrix = numpy.zeros((self.height, self.width), dtype=(float,3))
 		
+
+		#~ print(self.characterSpriteSheet)
+		
 		#Only works for 1 xumn
 		if (width > 2):
 			print("!!!!WARNING: UNSUPPORTED NUMBER OF COLUMNS!!!")
@@ -27,15 +31,31 @@ class Canopto:
 		self.bs.connect()
 		#self.bs.set_mode(2)
 
+		pygame.init()
 		if self.previewEnabled:
 			#Pygame init
-			pygame.init()
 			self.SCREEN = pygame.display.set_mode((400,400),0,32)
+			
+		self.characterSpriteSheet = pygame.image.load('res/8x8CGACodePage.png').convert()
+		self.characterArray = surfarray.array3d(self.characterSpriteSheet)
+		
+		
 			
 	def writeChar(self, character):
 		'Write the character to the display'
 		print("Wrote Char " + character)
 	
+	def getChar(self, char):
+		charValue = ord(char)
+		#~ print(charValue)
+		col = charValue % 32
+		row = int(charValue / 32)
+		#~ print(str(col) + " " + str(row))
+		charImage = pygame.Surface((8,8))
+		charImage.blit(self.characterSpriteSheet, (0,0), (col*8, row*8, 8, 8))
+		#~ pygame.image.save(charImage, "test.png")
+		return charImage
+		
 	def update(self):
 		#print matrix to console
 		print(self.matrix)
@@ -95,5 +115,5 @@ if __name__ == "__main__":
 			randomX = randint(0,CANOPTO.width-1)
 			randomY = randint(0,CANOPTO.height-1)		
 			CANOPTO.setPixel(randomX, randomY, CANOPTO.randomColor())
-			CANOPTO.update()
+		CANOPTO.update()
 		pygame.event.wait()
