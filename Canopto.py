@@ -11,14 +11,14 @@ WHITE = (255,255,255)
 
 class Canopto:
 	'The Matrix of LEDs that make up the display'
-	width = 2
-	height = 8
-	matrix = numpy.zeros((height, width), dtype=(float,3))
-	pixelPadding = 10
-	# pyCenter = (int(self.self.SCREEN.get_width()/2), int(selfSCREEN.get_height()/2))
 	
-	def __init__(self, width, height):
 	
+	def __init__(self, width = 2, height = 8, simulatorEnabled = True):
+		self.width = width
+		self.height = height
+		self.simulatorEnabled = simulatorEnabled
+		self.matrix = numpy.zeros((self.height, self.width), dtype=(float,3))
+		
 		#Only works for 1 xumn
 		if (width > 2):
 			print("!!!!WARNING: UNSUPPORTED NUMBER OF xUMNS!!!")
@@ -28,9 +28,10 @@ class Canopto:
 		self.bs.connect()
 		#self.bs.set_mode(2)
 
-		#Pygame init
-		pygame.init()
-		self.SCREEN = pygame.display.set_mode((400,400),0,32)
+		if self.simulatorEnabled:
+			#Pygame init
+			pygame.init()
+			self.SCREEN = pygame.display.set_mode((400,400),0,32)
 
 	
 	def writeChar(self, character):
@@ -41,14 +42,23 @@ class Canopto:
 		#print matrix to console
 		print(self.matrix)
 		
-		#reset pygame window
-		self.SCREEN.fill(BLACK)
+		
 		
 		#draw pixels onto pygame window
-		for y in range(0,self.height):
-			for x in range(0,self.width):
-				pygame.draw.circle(self.SCREEN, self.matrix[y][x], (x*20 + 100, y*20 + 100), 10)
-		pygame.display.update()
+		if self.simulatorEnabled:
+			#reset pygame window
+			self.SCREEN.fill(BLACK)
+		
+			for y in range(0,self.height):
+				for x in range(0,self.width):
+					#Draw circular pixels
+					pygame.draw.circle(self.SCREEN, self.matrix[y][x], (x*20 + 100, y*20 + 100), 10)
+					
+					#Draw pixel boundaries
+					borderRect = pygame.Rect((x*20 + 90, y*20 + 90), (20, 20))
+					pygame.draw.rect(self.SCREEN, ([75] * 3), borderRect, 1)
+			#update the screen!
+			pygame.display.update()
 		
 		
 	def softToHardPixel(self, x, y):
@@ -65,17 +75,18 @@ class Canopto:
 		print (self.softToHardPixel(x, y))
 		self.bs.set_color (0, self.softToHardPixel(x, y), color[0], color[1], color[2])
 		self.bs.send_data(0)
+	
+	def randomColor(self):
+		return (randint(0,255), randint(0,255), randint(0,255))
 
 
 #Main
 if __name__ == "__main__":
-	CANOPTO = Canopto(2, 8)
+	CANOPTO = Canopto(2, 8, simulatorEnabled = True)
 	while True:
 		print(CANOPTO.matrix)
 		randomX = randint(0,CANOPTO.width-1)
-		randomY = randint(0,CANOPTO.height-1)
-		
-		print(str(randomX) + " " + str(randomY))
-		CANOPTO.setPixel(randomX, randomY, (0, 255, 0))
+		randomY = randint(0,CANOPTO.height-1)		
+		CANOPTO.setPixel(randomX, randomY, CANOPTO.randomColor())
 		CANOPTO.update()
 		time.sleep(1)
