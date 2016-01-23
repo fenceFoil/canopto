@@ -4,6 +4,7 @@ import pygame
 from pygame.locals import *
 import time
 import numpy
+from random import randint
 
 BLACK = (0,0,0)
 WHITE = (255,255,255)
@@ -12,15 +13,15 @@ class Canopto:
 	'The Matrix of LEDs that make up the display'
 	width = 2
 	height = 8
-	matrix = numpy.zeros((height,width), dtype=(float,3))
+	matrix = numpy.zeros((width, height), dtype=(float,3))
 	pixelPadding = 10
 	# pyCenter = (int(self.self.SCREEN.get_width()/2), int(selfSCREEN.get_height()/2))
 	
 	def __init__(self, width, height):
 	
-		#Only works for 1 column
+		#Only works for 1 xumn
 		if (width > 2):
-			print("!!!!WARNING: UNSUPPORTED NUMBER OF COLUMNS!!!")
+			print("!!!!WARNING: UNSUPPORTED NUMBER OF xUMNS!!!")
 		
 		#Blinkstick init
 		self.bs = blinkstick.BlinkStickPro (width*height, 0, 0, 0.002, 255)
@@ -29,7 +30,7 @@ class Canopto:
 
 		#Pygame init
 		pygame.init()
-		self.SCREEN = pygame.display.set_mode((500,400),0,32)
+		self.SCREEN = pygame.display.set_mode((400,400),0,32)
 
 	
 	def writeChar(self, character):
@@ -44,35 +45,38 @@ class Canopto:
 		self.SCREEN.fill(BLACK)
 		
 		#draw pixels onto pygame window
-		for r in range(0,self.height):
-			for c in range(0,self.width):
-				#~ self.pg
-				pygame.draw.circle(self.SCREEN, WHITE, (c*20 + 100, r*20 + 100), 10)
-		#~ self.pg
+		for y in range(0,self.height):
+			for x in range(0,self.width):
+				pygame.draw.circle(self.SCREEN, WHITE, (x*20 + 100, y*20 + 100), 10)
 		pygame.display.update()
 		
-	def softToHardPixel(self, col, row):
-		'Convert a software pixel (col, row) to the hardware pixel index'
-		print("UGGH")
-		# 16 or width*height*(col//2) selects a 2-can-wide column of lights
-		# (((height-1)-row)//4) selects a cell of 4 cans
-		# (row%2) adds one if the row is odd
-		# (col%2) is true for the second column of cans in a cell
-		# (1+((row+1)%2)) adds 1 for the lower right can in a cell, and adds one more for the upper right can in a cell
-		return (self.width*self.height)*(col//2) + (((self.height-1)-row)//2)*4+(row%2)+(col%2)*(3-2*((row)%2))		
-	def setPixel(self, col, row, color):
-		self.matrix[row][col] = color
-		print (self.softToHardPixel(col, row))
-		self.bs.set_color (0, self.softToHardPixel(col, row), color[0], color[1], color[2])
+		
+		
+	def softToHardPixel(self, x, y):
+		'Convert a software pixel (x, y) to the hardware pixel index'
+		# 16 or width*height*(x//2) selects a 2-can-wide xumn of lights
+		# (((height-1)-y)//4) selects a cell of 4 cans
+		# (y%2) adds one if the y is odd
+		# (x%2) is true for the second xumn of cans in a cell
+		# (1+((y+1)%2)) adds 1 for the lower right can in a cell, and adds one more for the upper right can in a cell
+		return (self.width*self.height)*(x//2) + (((self.height-1)-y)//2)*4+(y%2)+(x%2)*(3-2*((y)%2))		
+		
+	def setPixel(self, x, y, color):
+		self.matrix[x % (self.width-1)][y % (self.height-1)] = color
+		print (self.softToHardPixel(x, y))
+		self.bs.set_color (0, self.softToHardPixel(x, y), color[0], color[1], color[2])
 		self.bs.send_data(0)
 
 
 #Main
 if __name__ == "__main__":
 	CANOPTO = Canopto(2, 8)
-	for i in range(0, 2):
-		CANOPTO.setPixel(0, i, (0, 255, 0))
-	while False:
-		CANOPTO.update()
+	while True:
+		print(str(CANOPTO.width) + " " + str(CANOPTO.height))
+		randomX = randint(0,CANOPTO.width)
+		randomY = randint(0,CANOPTO.height)
 		
+		print(str(randomX) + " " + str(randomY))
+		CANOPTO.setPixel(randomX, randomY, (0, 255, 0))
+		CANOPTO.update()
 		time.sleep(1)
