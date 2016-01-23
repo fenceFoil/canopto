@@ -51,8 +51,8 @@ class Canopto:
 			#Pygame init
 			self.SCREEN = pygame.display.set_mode((400,400),0,32)
 			
-		self.characterSpriteSheet = pygame.image.load('res/8x8CGACodePage.png').convert()
-		self.characterArray = surfarray.array3d(self.characterSpriteSheet)
+			self.characterSpriteSheet = pygame.image.load('res/8x8CGACodePage.png').convert()
+			self.characterArray = surfarray.array3d(self.characterSpriteSheet)
 		
 		
 			
