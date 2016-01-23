@@ -13,7 +13,7 @@ class Canopto:
 	'The Matrix of LEDs that make up the display'
 	width = 2
 	height = 8
-	matrix = numpy.zeros((width, height), dtype=(float,3))
+	matrix = numpy.zeros((height, width), dtype=(float,3))
 	pixelPadding = 10
 	# pyCenter = (int(self.self.SCREEN.get_width()/2), int(selfSCREEN.get_height()/2))
 	
@@ -47,9 +47,8 @@ class Canopto:
 		#draw pixels onto pygame window
 		for y in range(0,self.height):
 			for x in range(0,self.width):
-				pygame.draw.circle(self.SCREEN, WHITE, (x*20 + 100, y*20 + 100), 10)
+				pygame.draw.circle(self.SCREEN, self.matrix[y][x], (x*20 + 100, y*20 + 100), 10)
 		pygame.display.update()
-		
 		
 		
 	def softToHardPixel(self, x, y):
@@ -62,7 +61,7 @@ class Canopto:
 		return (self.width*self.height)*(x//2) + (((self.height-1)-y)//2)*4+(y%2)+(x%2)*(3-2*((y)%2))		
 		
 	def setPixel(self, x, y, color):
-		self.matrix[x % (self.width-1)][y % (self.height-1)] = color
+		self.matrix[y][x] = color
 		print (self.softToHardPixel(x, y))
 		self.bs.set_color (0, self.softToHardPixel(x, y), color[0], color[1], color[2])
 		self.bs.send_data(0)
@@ -72,9 +71,9 @@ class Canopto:
 if __name__ == "__main__":
 	CANOPTO = Canopto(2, 8)
 	while True:
-		print(str(CANOPTO.width) + " " + str(CANOPTO.height))
-		randomX = randint(0,CANOPTO.width)
-		randomY = randint(0,CANOPTO.height)
+		print(CANOPTO.matrix)
+		randomX = randint(0,CANOPTO.width-1)
+		randomY = randint(0,CANOPTO.height-1)
 		
 		print(str(randomX) + " " + str(randomY))
 		CANOPTO.setPixel(randomX, randomY, (0, 255, 0))
