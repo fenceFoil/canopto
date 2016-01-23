@@ -75,6 +75,9 @@ class Canopto:
 		print (self.softToHardPixel(x, y))
 		self.bs.set_color (0, self.softToHardPixel(x, y), color[0], color[1], color[2])
 		self.bs.send_data(0)
+		
+	def getPixel(self, x, y):
+		return self.matrix[y][x]
 	
 	def randomColor(self):
 		return (randint(0,255), randint(0,255), randint(0,255))
