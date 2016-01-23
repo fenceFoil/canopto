@@ -20,7 +20,9 @@ while True:
 	new_image = Surface(display_size)
 	for x in range (0, 2):
 		for y in range (0, 8):
-			new_image.set_at((x, y), Color(randint(0, 255), randint(0, 255), randint(0, 255)))
+			rand_color = Color(0, 0, 0, 0)
+			rand_color.hsla = (randint(0, 360), 100, 50, 100)
+			new_image.set_at((x, y), rand_color)
 	
 	# Fade onto old image
 	for alpha in range (0, 256, 4):
