@@ -13,7 +13,7 @@ WHITE = (255,255,255)
 class Canopto:
 	'The Matrix of LEDs that make up the display'
 	
-	def __init__(self, width = 2, height = 8, previewEnabled = True, useGamma = False):
+	def __init__(self, width = 2, height = 8, previewEnabled = True, useGamma = False, backgroundColor = (50,50,50), fontColor = (255, 255, 255)):
 		self.width = width
 		self.height = height
 		self.previewEnabled = previewEnabled
@@ -36,6 +36,10 @@ class Canopto:
 		171, 173, 175, 177, 180, 182, 184, 186, 189, 191, 193, 196, 198,
 		200, 203, 205, 208, 210, 213, 215, 218, 220, 223, 225, 228, 231,
 		233, 236, 239, 241, 244, 247, 249, 252, 255 ]
+		
+		#Colors
+		self.backgroundColor = self.toGamma(backgroundColor)
+		self.fontColor = self.toGamma(fontColor)
 		
 		#Only works for 1 column
 		if (width > 2):
@@ -70,9 +74,17 @@ class Canopto:
 		col = charValue % 32
 		row = int(charValue / 32)
 		charImage = pygame.Surface((8,8))
-		#Maybe cut off bottom pixel?
+		
+		#set the background color
+		charImage.fill(self.backgroundColor)
+		
+		#Crop character from spritesheet
 		charImage.blit(self.characterSpriteSheet, (0,0), (col*8, row*8, 8, 8))
-		return self.invertImage(charImage)
+		
+		#set the font color
+		charImage = self.colorReplace(charImage, (255,255,255), self.fontColor)
+		
+		return charImage
 
 	def update(self):
 		#print matrix to console
@@ -106,17 +118,20 @@ class Canopto:
 		
 	def setPixel(self, x, y, color):
 		self.matrix[y][x] = color
-		curved_color = color
-		if self.useGamma:
-			curved_color = (self.gamma[int(color[0])], self.gamma[int(color[1])], self.gamma[int(color[2])])
+		curved_color = self.toGamma(color)
 		self.bs.set_color (0, self.softToHardPixel(x, y), *curved_color)
 		self.bs.send_data(0)
+		
+	def toGamma(self, color):
+		if self.useGamma:
+			return (self.gamma[int(color[0])], self.gamma[int(color[1])], self.gamma[int(color[2])])
+		return color
 		
 	def getPixel(self, x, y):
 		return self.matrix[y][x]
 		
 	def drawSurface(self, surface):
-		
+		if (surface.get_width() < self.width): return
 		for x in range (0, self.width):
 			for y in range (0, self.height):
 				color = surface.get_at((x, y))
@@ -128,7 +143,7 @@ class Canopto:
 		self.bs.send_data(0)
 	
 	def randomColor(self):
-		return (randint(0,255), randint(0,255), randint(0,255))
+		return self.toGamma((randint(0,255), randint(0,255), randint(0,255)))
 
 	#http://stackoverflow.com/questions/5891808/how-to-invert-colors-of-an-image-in-pygames
 	def invertImage(self,img):
@@ -136,14 +151,21 @@ class Canopto:
 		inv.fill((255,255,255,255))
 		inv.blit(img, (0,0), None, BLEND_RGB_SUB)
 		return inv
+	
+	#http://stackoverflow.com/questions/15076133/pygame-edit-colours-of-an-image-makes-white-red-at-255-0-0-without-numerical
+	def colorReplace(self, surface, find_color, replace_color):
+		for x in range(surface.get_size()[0]):
+			for y in range(surface.get_size()[1]):
+				if surface.get_at([x, y]) == find_color:
+					surface.set_at([x, y], replace_color)
+		return surface
 		
 
 #Main
 if __name__ == "__main__":
 	CANOPTO = Canopto(2, 8, previewEnabled = True, useGamma = True)
 	
-	#~ sentence = "Hello"
-	sentence = " "
+	sentence = "Hello"
 	#~ for i in range(0,255):
 		#~ sentence += chr(i)
 		
@@ -151,27 +173,40 @@ if __name__ == "__main__":
 	
 	
 	loopCount = 0
-	
+	fps = 10
 	running = True
+	sentenceBuffer = ""
 	while running:
 		for event in pygame.event.get():
 			if event.type==QUIT:
 				running = False
 			if event.type == pygame.KEYDOWN:
-				sentence = sentence + chr(event.key)
-				loopCount = 0
-				sentenceSurface = CANOPTO.makeSentence(sentence)
+				if (event.key == K_KP_MINUS):
+					fps -= 1
+					if (fps <= 0): fps = 1
+					print("Speed: " + fps)
+				elif (event.key == K_KP_PLUS):
+					fps += 1
+					print("Speed: " + fps)
+				else:
+					sentenceBuffer += chr(event.key)
 		prevTime = pygame.time.get_ticks()
 		CANOPTO.drawSurface(sentenceSurface)
 		
 		sentenceSurface.scroll(dx=-1)
 		loopCount+=1
+		#If a char just passed by
 		if (loopCount % 8 == 0):
+			#~ CANOPTO.backgroundColor = CANOPTO.randomColor() #Uncomment to make every character have a different background color
 			sentence = sentence[1:]
-			print(sentence)
+			sentence = sentence + sentenceBuffer
+			sentenceBuffer = ""
+			sentenceSurface = CANOPTO.makeSentence(sentence)
+			if (len(sentence) > 0):
+				print(sentence)
 		
 		CANOPTO.update()
-		CANOPTO.clock.tick(10)
+		CANOPTO.clock.tick(fps)
 	
 	
 	
