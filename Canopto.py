@@ -2,7 +2,7 @@
 import blinkstick.blinkstick as blinkstick
 import pygame
 from pygame.locals import *
-import time
+from time import time
 import numpy
 from random import randint
 
@@ -12,7 +12,6 @@ WHITE = (255,255,255)
 class Canopto:
 	'The Matrix of LEDs that make up the display'
 	
-	
 	def __init__(self, width = 2, height = 8, simulatorEnabled = True):
 		self.width = width
 		self.height = height
@@ -21,7 +20,7 @@ class Canopto:
 		
 		#Only works for 1 xumn
 		if (width > 2):
-			print("!!!!WARNING: UNSUPPORTED NUMBER OF xUMNS!!!")
+			print("!!!!WARNING: UNSUPPORTED NUMBER OF COLUMNS!!!")
 		
 		#Blinkstick init
 		self.bs = blinkstick.BlinkStickPro (width*height, 0, 0, 0.002, 255)
@@ -32,7 +31,6 @@ class Canopto:
 			#Pygame init
 			pygame.init()
 			self.SCREEN = pygame.display.set_mode((400,400),0,32)
-
 	
 	def writeChar(self, character):
 		'Write the character to the display'
@@ -41,8 +39,6 @@ class Canopto:
 	def update(self):
 		#print matrix to console
 		print(self.matrix)
-		
-		
 		
 		#draw pixels onto pygame window
 		if self.simulatorEnabled:
@@ -86,10 +82,18 @@ class Canopto:
 #Main
 if __name__ == "__main__":
 	CANOPTO = Canopto(2, 8, simulatorEnabled = True)
-	while True:
-		print(CANOPTO.matrix)
-		randomX = randint(0,CANOPTO.width-1)
-		randomY = randint(0,CANOPTO.height-1)		
-		CANOPTO.setPixel(randomX, randomY, CANOPTO.randomColor())
-		CANOPTO.update()
-		time.sleep(1)
+	running = True
+	interval = 1
+	prevTime = time()
+	
+	while running:
+		for event in pygame.event.get():
+			if event.type==QUIT:
+				running = False
+		if (time() - prevTime) > interval:
+			prevTime = time()
+			randomX = randint(0,CANOPTO.width-1)
+			randomY = randint(0,CANOPTO.height-1)		
+			CANOPTO.setPixel(randomX, randomY, CANOPTO.randomColor())
+			CANOPTO.update()
+		pygame.event.wait()
