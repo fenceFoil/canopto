@@ -17,10 +17,15 @@ class Canopto:
 	# pyCenter = (int(self.self.SCREEN.get_width()/2), int(selfSCREEN.get_height()/2))
 	
 	def __init__(self, width, height):
+	
+		#Only works for 1 column
+		if (width > 2):
+			print("!!!!WARNING: UNSUPPORTED NUMBER OF COLUMNS!!!")
 		
 		#Blinkstick init
-		bs = blinkstick.BlinkStickPro (16, 0, 0, 0.002, 255)
-		bs.connect()
+		self.bs = blinkstick.BlinkStickPro (width*height, 0, 0, 0.002, 255)
+		self.bs.connect()
+		#self.bs.set_mode(2)
 
 		#Pygame init
 		pygame.init()
@@ -57,15 +62,17 @@ class Canopto:
 		return (self.width*self.height)*(col//2) + (((self.height-1)-row)//2)*4+(row%2)+(col%2)*(3-2*((row)%2))		
 	def setPixel(self, col, row, color):
 		self.matrix[row][col] = color
-		bs.set_color (0, softToHardPixel(col, row), color[0], color[1], color[2])
-		bs.send_data(0)
+		print (self.softToHardPixel(col, row))
+		self.bs.set_color (0, self.softToHardPixel(col, row), color[0], color[1], color[2])
+		self.bs.send_data(0)
 
 
 #Main
 if __name__ == "__main__":
 	CANOPTO = Canopto(2, 8)
-	CANOPTO.setPixel(0,0, WHITE)
-	while 1:
+	for i in range(0, 2):
+		CANOPTO.setPixel(0, i, (0, 255, 0))
+	while False:
 		CANOPTO.update()
 		
-		time.sleep(.25)
+		time.sleep(1)
