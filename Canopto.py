@@ -68,7 +68,7 @@ class Canopto:
 		
 	def setPixel(self, x, y, color):
 		self.matrix[y][x] = color
-		print (self.softToHardPixel(x, y))
+		#print (self.softToHardPixel(x, y))
 		self.bs.set_color (0, self.softToHardPixel(x, y), color[0], color[1], color[2])
 		self.bs.send_data(0)
 		
