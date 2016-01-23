@@ -12,10 +12,10 @@ WHITE = (255,255,255)
 class Canopto:
 	'The Matrix of LEDs that make up the display'
 	
-	def __init__(self, width = 2, height = 8, simulatorEnabled = True):
+	def __init__(self, width = 2, height = 8, previewEnabled = True):
 		self.width = width
 		self.height = height
-		self.simulatorEnabled = simulatorEnabled
+		self.previewEnabled = previewEnabled
 		self.matrix = numpy.zeros((self.height, self.width), dtype=(float,3))
 		
 		#Only works for 1 xumn
@@ -27,11 +27,11 @@ class Canopto:
 		self.bs.connect()
 		#self.bs.set_mode(2)
 
-		if self.simulatorEnabled:
+		if self.previewEnabled:
 			#Pygame init
 			pygame.init()
 			self.SCREEN = pygame.display.set_mode((400,400),0,32)
-	
+			
 	def writeChar(self, character):
 		'Write the character to the display'
 		print("Wrote Char " + character)
@@ -41,7 +41,7 @@ class Canopto:
 		print(self.matrix)
 		
 		#draw pixels onto pygame window
-		if self.simulatorEnabled:
+		if self.previewEnabled:
 			#reset pygame window
 			self.SCREEN.fill(BLACK)
 		
@@ -81,7 +81,7 @@ class Canopto:
 
 #Main
 if __name__ == "__main__":
-	CANOPTO = Canopto(2, 8, simulatorEnabled = True)
+	CANOPTO = Canopto(2, 8, previewEnabled = True)
 	running = True
 	interval = 1
 	prevTime = time()
