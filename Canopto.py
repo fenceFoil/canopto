@@ -37,7 +37,7 @@ class Canopto:
 		200, 203, 205, 208, 210, 213, 215, 218, 220, 223, 225, 228, 231,
 		233, 236, 239, 241, 244, 247, 249, 252, 255 ]
 		
-		#Only works for 1 xumn
+		#Only works for 1 column
 		if (width > 2):
 			print("!!!!WARNING: UNSUPPORTED NUMBER OF COLUMNS!!!")
 		
@@ -47,12 +47,14 @@ class Canopto:
 		#self.bs.set_mode(2)
 
 		pygame.init()
+		self.clock = pygame.time.Clock()
 		if self.previewEnabled:
 			#Pygame init
 			self.SCREEN = pygame.display.set_mode((400,400),0,32)
 			
 		self.characterSpriteSheet = pygame.image.load('res/8x8CGACodePage.png').convert()
 		self.characterArray = surfarray.array3d(self.characterSpriteSheet)
+		
 	
 	def makeSentence(self, sentence):
 		resultImage = pygame.Surface((len(sentence)*8, 8))
@@ -62,6 +64,7 @@ class Canopto:
 			count+=1
 		return resultImage
 		
+		
 	def getChar(self, char):
 		charValue = ord(char)
 		col = charValue % 32
@@ -69,8 +72,8 @@ class Canopto:
 		charImage = pygame.Surface((8,8))
 		#Maybe cut off bottom pixel?
 		charImage.blit(self.characterSpriteSheet, (0,0), (col*8, row*8, 8, 8))
-		return charImage
-		
+		return self.invertImage(charImage)
+
 	def update(self):
 		#print matrix to console
 		#~ print(self.matrix)
@@ -113,6 +116,7 @@ class Canopto:
 		return self.matrix[y][x]
 		
 	def drawSurface(self, surface):
+		
 		for x in range (0, self.width):
 			for y in range (0, self.height):
 				color = surface.get_at((x, y))
@@ -126,25 +130,50 @@ class Canopto:
 	def randomColor(self):
 		return (randint(0,255), randint(0,255), randint(0,255))
 
+	#http://stackoverflow.com/questions/5891808/how-to-invert-colors-of-an-image-in-pygames
+	def invertImage(self,img):
+		inv = pygame.Surface(img.get_rect().size, pygame.SRCALPHA)
+		inv.fill((255,255,255,255))
+		inv.blit(img, (0,0), None, BLEND_RGB_SUB)
+		return inv
+		
 
 #Main
 if __name__ == "__main__":
 	CANOPTO = Canopto(2, 8, previewEnabled = True, useGamma = True)
+	
+	#~ sentence = "Hello"
+	sentence = " "
+	#~ for i in range(0,255):
+		#~ sentence += chr(i)
+		
+	sentenceSurface = CANOPTO.makeSentence(sentence)
+	
+	
+	loopCount = 0
+	
 	running = True
-	interval = 100
-	prevTime = pygame.time.get_ticks()
-	
-	sentence = CANOPTO.makeSentence("Hello William")
-	
 	while running:
 		for event in pygame.event.get():
 			if event.type==QUIT:
 				running = False
-		if (pygame.time.get_ticks() - prevTime) > interval:
-			prevTime = pygame.time.get_ticks()
-			CANOPTO.drawSurface(sentence)
-			CANOPTO.update()
-			sentence.scroll(dx=-1)
-			#~ randomX = randint(0,CANOPTO.width-1)
-			#~ randomY = randint(0,CANOPTO.height-1)		
-			#~ CANOPTO.setPixel(randomX, randomY, CANOPTO.randomColor())
+			if event.type == pygame.KEYDOWN:
+				sentence = sentence + chr(event.key)
+				loopCount = 0
+				sentenceSurface = CANOPTO.makeSentence(sentence)
+		prevTime = pygame.time.get_ticks()
+		CANOPTO.drawSurface(sentenceSurface)
+		
+		sentenceSurface.scroll(dx=-1)
+		loopCount+=1
+		if (loopCount % 8 == 0):
+			sentence = sentence[1:]
+			print(sentence)
+		
+		CANOPTO.update()
+		CANOPTO.clock.tick(10)
+	
+	
+	
+	
+	
