@@ -1,0 +1,13 @@
+#!/bin/python3
+
+import Canopto
+import pygame
+from pygame.locals import *
+import time
+import random
+
+c = Canopto(2, 8)
+
+while True:
+	# Create a 1-pixel white snowflake
+	# Animate it falling down, by moving the snowflake to a random column, and fading out previoud position
