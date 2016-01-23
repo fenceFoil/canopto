@@ -2,7 +2,7 @@
 import blinkstick.blinkstick as blinkstick
 import pygame
 from pygame.locals import *
-from time import time
+import time
 import numpy
 from random import randint
 import pygame.surfarray as surfarray
@@ -53,27 +53,27 @@ class Canopto:
 			
 		self.characterSpriteSheet = pygame.image.load('res/8x8CGACodePage.png').convert()
 		self.characterArray = surfarray.array3d(self.characterSpriteSheet)
-		
-		
-			
-	def writeChar(self, character):
-		'Write the character to the display'
-		print("Wrote Char " + character)
 	
+	def makeSentence(self, sentence):
+		resultImage = pygame.Surface((len(sentence)*8, 8))
+		count = 0;
+		for c in sentence:
+			resultImage.blit(self.getChar(c), (count*8,0), (0,0,8,8))
+			count+=1
+		return resultImage
+		
 	def getChar(self, char):
 		charValue = ord(char)
-		#~ print(charValue)
 		col = charValue % 32
 		row = int(charValue / 32)
-		#~ print(str(col) + " " + str(row))
 		charImage = pygame.Surface((8,8))
+		#Maybe cut off bottom pixel?
 		charImage.blit(self.characterSpriteSheet, (0,0), (col*8, row*8, 8, 8))
-		#~ pygame.image.save(charImage, "test.png")
 		return charImage
 		
 	def update(self):
 		#print matrix to console
-		print(self.matrix)
+		#~ print(self.matrix)
 		
 		#draw pixels onto pygame window
 		if self.previewEnabled:
@@ -129,19 +129,22 @@ class Canopto:
 
 #Main
 if __name__ == "__main__":
-	CANOPTO = Canopto(2, 8, previewEnabled = True)
+	CANOPTO = Canopto(2, 8, previewEnabled = True, useGamma = True)
 	running = True
-	interval = 1
-	prevTime = time()
+	interval = 100
+	prevTime = pygame.time.get_ticks()
+	
+	sentence = CANOPTO.makeSentence("Hello William")
 	
 	while running:
 		for event in pygame.event.get():
 			if event.type==QUIT:
 				running = False
-		if (time() - prevTime) > interval:
-			prevTime = time()
-			randomX = randint(0,CANOPTO.width-1)
-			randomY = randint(0,CANOPTO.height-1)		
-			CANOPTO.setPixel(randomX, randomY, CANOPTO.randomColor())
-		CANOPTO.update()
-		pygame.event.wait()
+		if (pygame.time.get_ticks() - prevTime) > interval:
+			prevTime = pygame.time.get_ticks()
+			CANOPTO.drawSurface(sentence)
+			CANOPTO.update()
+			sentence.scroll(dx=-1)
+			#~ randomX = randint(0,CANOPTO.width-1)
+			#~ randomY = randint(0,CANOPTO.height-1)		
+			#~ CANOPTO.setPixel(randomX, randomY, CANOPTO.randomColor())
