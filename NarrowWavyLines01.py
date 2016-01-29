@@ -19,6 +19,7 @@ cans = Canopto (display_size[0], display_size[1], True, True)
 while True:
 	# Make an image 1000 pixels wide
 	lines = Surface((1000, display_size[1]+2))
+	lines.fill(Color(64, 92, 0, 255))
 	
 	# Draw lines
 	# Come up with sets of points. Alternate between high and low lines. Allow random space between each, and generate up to the end of the surface
@@ -28,13 +29,14 @@ while True:
 	currX = margin
 	points = [(margin, randint(0, lines.get_height()-1))]
 	while currX < lines.get_width() - margin:
-		currX = randint(currX+3, currX+30)
+		currX = randint(currX+7, currX+30)
 		currX = min(lines.get_width()-margin, currX)
 		points.append ((currX, randint(1, lines.get_height()-2)))
 		
 	# Draw line from points
-	white = Color(255, 255, 255, 255)
-	pygame.draw.aalines(lines, white, False, points)
+	#line_color = Color(54, 255, 54, 255)
+	line_color = Color(255, 0, 0, 255)
+	pygame.draw.aalines(lines, line_color, False, points)
 	
 	# Scroll image across canopto
 	for x in range (0, lines.get_width()-(display_size[0]-1)):
@@ -46,4 +48,4 @@ while True:
 		for event in pygame.event.get():
 			if event.type==QUIT:
 				sys.exit(0)
-		time.sleep(0.02)
+		time.sleep(0.03)
