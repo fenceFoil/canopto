@@ -228,7 +228,7 @@ if __name__ == "__main__":
     sentenceSurface = CANOPTO.makeSentence(sentence, 7, 8)
 
     loopCount = 0
-    fps = 10
+    fps = 30
     running = True
     sentenceBuffer = ""
     while running:
