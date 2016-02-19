@@ -6,6 +6,7 @@ import time
 import numpy
 from random import randint
 import pygame.surfarray as surfarray
+# from TwitterAPI import TwitterAPI
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -48,6 +49,15 @@ class Canopto:
                       200, 203, 205, 208, 210, 213, 215, 218, 220, 223, 225, 228, 231,
                       233, 236, 239, 241, 244, 247, 249, 252, 255]
 
+        # self.twitterApi = TwitterAPI(consumer_key='SC8WUh3IBx8OIfhVXA9iW8TS0',
+        #               consumer_secret='9gLafqg6brBtVRJQzDmFWhllqzS89NHEbtY4R9vTMjMy8pWAa5',
+        #               access_token_key='2655161640-j6M3jaLulX4EQUfXI4eHyU1ScldonSjy7LyAf3a',
+        #               access_token_secret='iVe0sgRYRJBMpzuJ8w3MHWTUdgLtSXu0jQmmZ2Ijw3rAH')
+        # r = self.twitterApi.request('search/tweets', {'q':'UNCC'})
+        # for item in r:
+        #         print(item)
+
+
         # Colors
         self.backgroundColor = self.toGamma(backgroundColor)
         self.fontColor = self.toGamma(fontColor)
@@ -68,27 +78,33 @@ class Canopto:
             self.SCREEN = pygame.display.set_mode((400, 400), 0, 32)
 
         self.characterSpriteSheet = pygame.image.load('res/8x8CGACodePage.png').convert()
+        # self.characterSpriteSheet = pygame.image.load('res/7x4fonttrans.png').convert()
         self.characterArray = surfarray.array3d(self.characterSpriteSheet)
 
-    def makeSentence(self, sentence):
-        resultImage = pygame.Surface((len(sentence) * 8, 8))
+    def makeSentence(self, sentence, charWidth = 5, charHeight = 8):
+        resultImage = pygame.Surface((len(sentence) * charWidth, charHeight))
         count = 0;
         for c in sentence:
-            resultImage.blit(self.getChar(c), (count * 8, 0), (0, 0, 8, 8))
+            resultImage.blit(self.getChar(c, charWidth, charHeight), (count * charWidth, 0), (0, 0, charWidth, charHeight))
             count += 1
         return resultImage
 
-    def getChar(self, char):
+    def getChar(self, char, charWidth = 5, charHeight = 8):
         charValue = ord(char)
-        col = charValue % 32
+
+        col = int(charValue % 32)
         row = int(charValue / 32)
-        charImage = pygame.Surface((8, 8))
+
+        # col = int(charValue % 97) % 10
+        # row = int(int(charValue % 97) / 10)
+        print("ascii:", charValue, "  char:", char, "   loc:", (col, row), "loc:", (col * charWidth, row * charHeight))
+        charImage = pygame.Surface((charWidth, charHeight))
 
         # set the background color
         charImage.fill(self.backgroundColor)
 
         # Crop character from spritesheet
-        charImage.blit(self.characterSpriteSheet, (0, 0), (col * 8, row * 8, 8, 8))
+        charImage.blit(self.characterSpriteSheet, (0, 0), (col * charWidth, row * charHeight, charWidth, charHeight))
 
         # set the font color
         charImage = self.colorReplace(charImage, (255, 255, 255), self.fontColor)
@@ -124,7 +140,7 @@ class Canopto:
         # (1+((y+1)%2)) adds 1 for the lower right can in a cell, and adds one more for the upper right can in a cell
         # return (self.width * self.height) * (x // 2) + (((self.height - 1) - y) // 2) * 4 + (y % 2) + (x % 2) * (
         # 3 - 2 * ((y) % 2))
-        print(x, y, self.conversionMatrix[y][x])
+        # print(x, y, self.conversionMatrix[y][x])
         return self.conversionMatrix[y][x]
 
     def setPixel(self, x, y, color):
@@ -200,16 +216,16 @@ if __name__ == "__main__":
     #                 i -= 1
     #     print(x, y, " = ", i)
     #     CANOPTO.matrix[y][x] = color
-    #
-    #     CANOPTO.bs.set_color(0, CANOPTO.conversionMatrix[y][x], 255, 255, 255)
+    #     #i will be replaced with CANOPTO.conversionMatrix[y][x]
+    #     CANOPTO.bs.set_color(0, i, 255, 255, 255)
     #     CANOPTO.bs.send_data(0)
     #     CANOPTO.update()
     #     CANOPTO.clock.tick(10)
 
 
-    sentence = "Hello"
+    sentence = "abc"
 
-    sentenceSurface = CANOPTO.makeSentence(sentence)
+    sentenceSurface = CANOPTO.makeSentence(sentence, 7, 8)
 
     loopCount = 0
     fps = 10
@@ -240,7 +256,7 @@ if __name__ == "__main__":
             sentence = sentence[1:]
             sentence = sentence + sentenceBuffer
             sentenceBuffer = ""
-            sentenceSurface = CANOPTO.makeSentence(sentence)
+            sentenceSurface = CANOPTO.makeSentence(sentence, 8, 8)
             if (len(sentence) > 0):
                 print(sentence)
 
