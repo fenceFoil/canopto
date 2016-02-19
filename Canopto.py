@@ -123,7 +123,7 @@ class Canopto:
             for y in range(0, self.height):
                 for x in range(0, self.width):
                     # Draw circular pixels
-                    pygame.draw.circle(self.SCREEN, self.matrix[y][x], (x * 20 + 100, y * 20 + 100), 10)
+                    pygame.draw.circle(self.SCREEN, self.matrix[y][x], (x * 20 + 100, y * 20 + 100), 9)
 
                     # Draw pixel boundaries
                     borderRect = pygame.Rect((x * 20 + 90, y * 20 + 90), (20, 20))
