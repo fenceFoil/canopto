@@ -97,7 +97,7 @@ class Canopto:
 
         # col = int(charValue % 97) % 10
         # row = int(int(charValue % 97) / 10)
-        print("ascii:", charValue, "  char:", char, "   loc:", (col, row), "loc:", (col * charWidth, row * charHeight))
+        #print("ascii:", charValue, "  char:", char, "   loc:", (col, row), "loc:", (col * charWidth, row * charHeight))
         charImage = pygame.Surface((charWidth, charHeight))
 
         # set the background color
@@ -228,7 +228,7 @@ if __name__ == "__main__":
     sentenceSurface = CANOPTO.makeSentence(sentence, 7, 8)
 
     loopCount = 0
-    fps = 30
+    fps = 10
     running = True
     sentenceBuffer = ""
     while running:
@@ -253,12 +253,14 @@ if __name__ == "__main__":
         # If a char just passed by
         if (loopCount % 8 == 0):
             # CANOPTO.backgroundColor = CANOPTO.randomColor() #Uncomment to make every character have a different background color
+            CANOPTO.backgroundColor = (0, 0, 0)
             sentence = sentence[1:]
             sentence = sentence + sentenceBuffer
             sentenceBuffer = ""
             sentenceSurface = CANOPTO.makeSentence(sentence, 8, 8)
             if (len(sentence) > 0):
-                print(sentence)
+                #print(sentence)
+                sentence = sentence
 
         CANOPTO.update()
         CANOPTO.clock.tick(fps)
