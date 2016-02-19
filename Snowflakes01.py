@@ -7,7 +7,7 @@ import time
 import random
 from colorsys import *
 
-c = Canopto(2, 8, False, True)
+c = Canopto(4, 8, True, True)
 c.bs.clear()
 c.bs.send_data(0)
 
