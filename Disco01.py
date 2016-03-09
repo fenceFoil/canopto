@@ -23,7 +23,7 @@ while True:
 	for x in range (0, display_size[0]):
 		for y in range (0, display_size[1]):
 			rand_color = Color(0, 0, 0, 0)
-			rand_color.hsla = (randint(0, 360), 78, 50, 100)
+			rand_color.hsla = (randint(0, 359), 100, 50, 100)
 			new_image.set_at((x, y), rand_color)
 	
 	# Fade onto old image
@@ -39,7 +39,7 @@ while True:
 				sys.exit(0)
 		time.sleep(0.02)
 		
-	time.sleep(0.1)
+	time.sleep(0.12)
 	
 	new_image.set_alpha(255)
 	old_image = new_image

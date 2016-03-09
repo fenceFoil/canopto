@@ -10,7 +10,7 @@ from colorsys import *
 import sys
 
 display_size = (4, 8)
-cans = Canopto (display_size[0], display_size[1], True, True)
+cans = Canopto (display_size[0], display_size[1], False, True)
 
 # Create image of random colors with a constant lightness
 # Fade it over the previous image
