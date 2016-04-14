@@ -6,6 +6,7 @@ import time
 import numpy
 from random import randint
 import pygame.surfarray as surfarray
+import os, sys
 # from TwitterAPI import TwitterAPI
 
 BLACK = (0, 0, 0)
@@ -15,7 +16,7 @@ WHITE = (255, 255, 255)
 class Canopto:
     'The Matrix of LEDs that make up the display'
 
-    def __init__(self, width=2, height=8, previewEnabled=True, useGamma=False, backgroundColor=(50, 50, 50),
+    def __init__(self, width=8, height=8, previewEnabled=True, useGamma=False, backgroundColor=(0, 0, 0),
                  fontColor=(255, 255, 255)):
         self.width = width
         self.height = height
@@ -23,14 +24,15 @@ class Canopto:
         self.useGamma = useGamma
         self.matrix = numpy.zeros((self.height, self.width), dtype=(float, 3))
         self.conversionMatrix = [
-            [12, 15, 16, 17, -1, -1, -1, -1],
-            [13, 14, 19, 18, -1, -1, -1, -1],
-            [8, 11, 20, 21, -1, -1, -1, -1],
-            [9, 10, 23, 22, -1, -1, -1, -1],
-            [4, 7, 24, 25, -1, -1, -1, -1],
-            [5, 6, 27, 26, -1, -1, -1, -1],
-            [0, 3, 28, 29, -1, -1, -1, -1],
-            [1, 2, 31, 30, -1, -1, -1, -1],
+            [12,15,31,30,46,47,62,63],
+			[13,14,28,29,45,44,61,60],
+			[8,11,26,27,42,43,58,59],
+			[9,10,24,25,41,40,57,56],
+			[4,7,23,22,38,39,54,55],
+			[5,6,21,20,37,36,53,52],
+			[0,3,18,19,34,35,50,51],
+			[1,2,17,16,33,32,49,48],
+			
         ]
         self.gamma = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1,
@@ -63,7 +65,7 @@ class Canopto:
         self.fontColor = self.toGamma(fontColor)
 
         # Only works for 2 columns
-        if (width > 4):
+        if (width > 8):
             print("!!!!WARNING: UNSUPPORTED NUMBER OF COLUMNS!!!")
 
             # Blinkstick init
@@ -77,15 +79,16 @@ class Canopto:
             # Pygame init
             self.SCREEN = pygame.display.set_mode((400, 400), 0, 32)
 
-        self.characterSpriteSheet = pygame.image.load('res/8x8CGACodePage.png').convert()
-        # self.characterSpriteSheet = pygame.image.load('res/7x4fonttrans.png').convert()
-        self.characterArray = surfarray.array3d(self.characterSpriteSheet)
+            self.characterSpriteSheet = pygame.image.load('res/7x5fontHD44780.png').convert_alpha()
+        # self.characterSpriteSheet = pygame.image.load('res/8x8CGACodePage.png').convert(8)
+        # self.characterSpriteSheet = pygame.image.load('res/7x4fonttrans.png').convert(8)
+        # self.characterArray = surfarray.array3d(self.characterSpriteSheet)
 
     def makeSentence(self, sentence, charWidth = 5, charHeight = 8):
-        resultImage = pygame.Surface((len(sentence) * charWidth, charHeight))
+        resultImage = pygame.Surface((len(sentence) * (charWidth+1), charHeight))
         count = 0;
         for c in sentence:
-            resultImage.blit(self.getChar(c, charWidth, charHeight), (count * charWidth, 0), (0, 0, charWidth, charHeight))
+            resultImage.blit(self.getChar(c, charWidth, charHeight), (count * (charWidth+1), 0), (0, 0, charWidth, charHeight))
             count += 1
         return resultImage
 
@@ -97,7 +100,7 @@ class Canopto:
 
         # col = int(charValue % 97) % 10
         # row = int(int(charValue % 97) / 10)
-        #print("ascii:", charValue, "  char:", char, "   loc:", (col, row), "loc:", (col * charWidth, row * charHeight))
+        print("ascii:", charValue, "  char:", char, "   loc:", (col, row), "loc:", (col * charWidth, row * charHeight))
         charImage = pygame.Surface((charWidth, charHeight))
 
         # set the background color
@@ -192,7 +195,7 @@ class Canopto:
 
 # Main
 if __name__ == "__main__":
-    CANOPTO = Canopto(4, 8, previewEnabled=True, useGamma=True)
+    CANOPTO = Canopto(8, 8, previewEnabled=True, useGamma=True)
 
     # Testing
     # color = WHITE
@@ -225,10 +228,10 @@ if __name__ == "__main__":
 
     sentence = "abc"
 
-    sentenceSurface = CANOPTO.makeSentence(sentence, 7, 8)
+    sentenceSurface = CANOPTO.makeSentence(sentence)
 
     loopCount = 0
-    fps = 10
+    fps = 15
     running = True
     sentenceBuffer = ""
     while running:
@@ -251,13 +254,12 @@ if __name__ == "__main__":
         sentenceSurface.scroll(dx=-1)
         loopCount += 1
         # If a char just passed by
-        if (loopCount % 8 == 0):
+        if (loopCount % 6 == 0):
             # CANOPTO.backgroundColor = CANOPTO.randomColor() #Uncomment to make every character have a different background color
-            CANOPTO.backgroundColor = (0, 0, 0)
             sentence = sentence[1:]
             sentence = sentence + sentenceBuffer
             sentenceBuffer = ""
-            sentenceSurface = CANOPTO.makeSentence(sentence, 8, 8)
+            sentenceSurface = CANOPTO.makeSentence(sentence)
             if (len(sentence) > 0):
                 #print(sentence)
                 sentence = sentence
