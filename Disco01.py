@@ -9,7 +9,7 @@ from random import randint
 from colorsys import *
 import sys
 
-display_size = (4, 8)
+display_size = (8, 8)
 cans = Canopto (display_size[0], display_size[1], True, True)
 
 # Create image of random colors with a constant lightness
