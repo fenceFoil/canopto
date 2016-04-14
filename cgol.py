@@ -12,7 +12,7 @@ import numpy
 import math
 
 
-display_size = (4, 8)
+display_size = (8, 8)
 cans = Canopto (display_size[0], display_size[1], True, True)
 
 # Plays Conway's Game of Life over the display, fading in each new frame over the last
@@ -56,7 +56,7 @@ def calculate_frame (last_frame):
 				# Neigbors only possible in-bounds
 				if (0 <= rel_x < width) and (0 <= rel_y < height):
 					#print ("      In cell ", (rel_x, rel_y), " last_frame is ", (last_frame[rel_y][rel_x]))
-					if (last_frame[rel_y][rel_x] == 1):
+					if (last_frame[rel_y][rel_x] > 0):
 						neighbors += 1
 			#print ("Neighbors ", neighbors)					
 			
@@ -122,26 +122,41 @@ while True:
 	cell_color_hue = randint(0, 359)
 	cell_color.hsla = (cell_color_hue, 100, 50, 100)
 	
+	
 	# Run frames of each simulation until they are stuck in a cycle
 	# or still life
+	new_texture = None
+	old_texture = Surface(display_size)
+	old_texture.fill(Color(0, 0, 0))
 	remaining_frames = None
 	while (remaining_frames == None) or (remaining_frames > 0):
-		# TODO Render transition to new frame
-		cell_color_hue = (cell_color_hue + 3) % 360
-		cell_color.hsla = (cell_color_hue, 100, 50, 100)
-		surface = Surface(display_size)
-		surface.fill(Color(0, 0, 0))
-		surface.blit(frame_to_surface(curr_frame, cell_color), (0, 0))
-		cans.drawSurface(surface)
+		# Render a new frame
+		new_texture = Surface(display_size)
+		new_texture.fill(Color(0, 0, 0))
+		new_texture.blit(frame_to_surface(curr_frame, cell_color), (0, 0))
+		
+		# Fade onto old frame
+		for alpha in range (0, 256, 12):
+			intermediate_image = old_texture.copy()
+			new_texture.set_alpha(alpha)
+			intermediate_image.blit(new_texture, (0, 0))
+			cans.drawSurface(intermediate_image)
+			
+			cans.update()
+			for event in pygame.event.get():
+				if event.type==QUIT:
+					sys.exit(0)
+			time.sleep(0.01)
+		
+		cans.drawSurface(new_texture)
 		cans.update()
-		for event in pygame.event.get():
-			if event.type==QUIT:
-				sys.exit(0)
-		time.sleep(0.1)
+				
+		time.sleep(0.75)
 		
 		# Log previous frame into last frame and the history
 		history.append(curr_frame)
 		last_frame = curr_frame
+		old_texture = new_texture
 		
 		# Calculate current frame
 		curr_frame = calculate_frame(last_frame)
@@ -154,37 +169,4 @@ while True:
 		# Update remaining frames
 		if remaining_frames != None:
 			remaining_frames -= 1
-
-# while True:
-	# # Make an image 1000 pixels wide
-	# lines = Surface((1000, display_size[1]+2))
-	# lines.fill(Color(0, 0, 92, 255))
-	
-	# # Draw lines
-	# # Come up with sets of points. Alternate between high and low lines. Allow random space between each, and generate up to the end of the surface
-	
-	# # Simple algorithm: generate one line. 
-	# margin = 5
-	# currX = margin
-	# points = [(margin, randint(0, lines.get_height()-1))]
-	# while currX < lines.get_width() - margin:
-		# currX = randint(currX+7, currX+30)
-		# currX = min(lines.get_width()-margin, currX)
-		# points.append ((currX, randint(1, lines.get_height()-2)))
-		
-	# # Draw line from points
-	# #line_color = Color(54, 255, 54, 255)
-	# line_color = Color(255, 128, 0, 255)
-	# pygame.draw.aalines(lines, line_color, False, points)
-	
-	# # Scroll image across canopto
-	# for x in range (0, lines.get_width()-(display_size[0]-1)):
-		# frame = Surface (display_size)
-		# frame.blit (lines, (-x, -1))
-		# cans.drawSurface(frame)
-		
-		# cans.update()
-		# for event in pygame.event.get():
-			# if event.type==QUIT:
-				# sys.exit(0)
-		# time.sleep(0.03)
+			
