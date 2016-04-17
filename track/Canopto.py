@@ -1,18 +1,16 @@
 import threading
-import time
 from random import randint
-
 import blinkstick.blinkstick as blinkstick
 import numpy
 import pygame
-
+from PersonTracker import PersonTracker
 
 class Canopto(threading.Thread):
     'The Matrix of LEDs that make up the display'
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
 
-    def __init__(self, width=8, height=8, previewEnabled=True, useGamma=False, backgroundColor=(0, 0, 0), fontColor = (255, 255, 255)):
+    def __init__(self, width=8, height=8, previewEnabled=True, useGamma=False, backgroundColor=(0, 0, 0), fontColor = (255, 255, 255), tracker = None):
         threading.Thread.__init__(self)
         self.width = width
         self.height = height
@@ -49,16 +47,21 @@ class Canopto(threading.Thread):
         # Colors
         self.backgroundColor = self.toGamma(backgroundColor)
         self.fontColor = self.toGamma(fontColor)
+        self.crazyColorMode = False
 
         # Only works for 8 columns
-        if (width > 8):
+        if (self.width > 8):
             print("!!!!WARNING: UNSUPPORTED NUMBER OF COLUMNS!!!")
 
         # Blinkstick init
         self.bs = blinkstick.BlinkStickPro(width * height, 0, 0, 0.002, 255)
         self.bs.connect()
 
+        #self.mode = "text"
+        self.mode = "track"
+
         # PyGame is used for drawing
+        self.running = True
         pygame.init()
         self.clock = pygame.time.Clock()
         if self.previewEnabled:
@@ -88,7 +91,7 @@ class Canopto(threading.Thread):
 
         # col = int(charValue % 97) % 10
         # row = int(int(charValue % 97) / 10)
-        print("ascii:", charValue, "  char:", char, "   loc:", (col, row), "loc:", (col * charWidth, row * charHeight))
+        #print("ascii:", charValue, "  char:", char, "   loc:", (col, row), "loc:", (col * charWidth, row * charHeight))
         charImage = pygame.Surface((charWidth, charHeight))
 
         # set the background color
@@ -133,11 +136,12 @@ class Canopto(threading.Thread):
         return self.conversionMatrix[y][x]
 
 
-    def setPixel(self, x, y, color):
+    def setPixel(self, x, y, color=(255, 255, 255)):
         self.matrix[y][x] = color
         curved_color = self.toGamma(color)
         self.bs.set_color(0, self.softToHardPixel(x, y), *curved_color)
         self.bs.send_data(0)
+
 
 
     def toGamma(self, color):
@@ -162,22 +166,17 @@ class Canopto(threading.Thread):
                 self.bs.set_color(0, self.softToHardPixel(x, y), *curved_color)
         self.bs.send_data(0)
 
-
     def randomColor(self):
         return self.toGamma((randint(0, 255), randint(0, 255), randint(0, 255)))
 
-        # http://stackoverflow.com/questions/5891808/how-to-invert-colors-of-an-image-in-pygames
-
-
+    # http://stackoverflow.com/questions/5891808/how-to-invert-colors-of-an-image-in-pygames
     def invertImage(self, img):
         inv = pygame.Surface(img.get_rect().size, pygame.SRCALPHA)
         inv.fill((255, 255, 255, 255))
         inv.blit(img, (0, 0), None, pygame.BLEND_RGB_SUB)
         return inv
 
-        # http://stackoverflow.com/questions/15076133/pygame-edit-colours-of-an-image-makes-white-red-at-255-0-0-without-numerical
-
-
+    # http://stackoverflow.com/questions/15076133/pygame-edit-colours-of-an-image-makes-white-red-at-255-0-0-without-numerical
     def colorReplace(self, surface, find_color, replace_color):
         for x in range(surface.get_size()[0]):
             for y in range(surface.get_size()[1]):
@@ -185,53 +184,74 @@ class Canopto(threading.Thread):
                     surface.set_at([x, y], replace_color)
         return surface
 
-
     def drawSentence(self, string):
-        self.sentenceBuffer = string
+        self.sentenceBuffer = "  " + str(string)
 
+    def clear(self):
+        self.sentence = " "
+        self.sentenceBuffer = "  "
+        self.matrix = numpy.zeros((self.height, self.width), dtype=(float, 3))
+        self.SCREEN.fill(self.BLACK)
+        self.updateScreen()
+        self.updatePreview()
 
     def run(self):
-        self.sentence = "initializing..."
+        print "Running Canopto"
+
+
+        #Initialize Person Tracker
+        self.tracker = PersonTracker()
+        PersonTracker.start(self.tracker)
+
+        self.fps = 16
+        defaultTextSpeed = 16
+        defaultTrackSpeed = 60
+        self.sentenceBuffer = ""
+        self.sentence = ""
         deltaChars = 1
         self.sentenceSurface = self.makeSentence(self.sentence)
         loopCount = 0
-        fps = 25
-        running = True
-        self.sentenceBuffer = ""
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.KEYDOWN:
-                    if (event.key == pygame.K_KP_MINUS):
-                        fps -= 1
-                        if (fps <= 0): fps = 1
-                        print("Speed: " + fps)
-                    elif (event.key == pygame.K_KP_PLUS):
-                        fps += 1
-                        print("Speed: " + fps)
-                    else:
-                        self.sentenceBuffer += chr(event.key)
-            prevTime = pygame.time.get_ticks()
-            self.drawSurface(self.sentenceSurface)
 
-            self.sentenceSurface.scroll(dx=-deltaChars)
-            loopCount += 1
-            # If a char just passed by
-            if (loopCount % 6 == 0):
-                # CANOPTO.backgroundColor = CANOPTO.randomColor() #Uncomment to make every character have a different background color
-                self.sentence = self.sentence[deltaChars:]
-                self.sentence = self.sentence + self.sentenceBuffer
-                self.sentenceBuffer = ""
-                self.sentenceSurface = self.makeSentence(self.sentence)
+        while self.running:
+            for event in pygame.event.get():
+                if hasattr(event, 'key') and event.key == 27:
+                    self.running = False
+                    break
+
+            if self.mode == "text":
+                if self.fps is not defaultTextSpeed: self.fps = defaultTextSpeed
+                self.drawSurface(self.sentenceSurface)
+                self.sentenceSurface.scroll(dx=-deltaChars)
+                loopCount += 1
+                # If a char just passed by
+                if (loopCount % 6 == 0):
+                    #if self.crazyColorMode:
+                        #self.backgroundColor = self.randomColor() #Uncomment to make every character have a different background color
+                    self.sentence = self.sentence + self.sentenceBuffer
+                    self.sentence = self.sentence[deltaChars:]
+                    self.sentenceBuffer = ""
+                    self.sentenceSurface = self.makeSentence(self.sentence)
+            elif self.mode == "track" and self.tracker is not None:
+                #if not self.tracker.resetToMotion: self.tracker.resetToMotion = True
+                if self.fps is not defaultTrackSpeed:
+                    self.fps = defaultTrackSpeed
+                    self.tracker.resetToMotion = True
+                #print "Person Location:", self.tracker.personLocation
+                x, y = self.tracker.personLocation
+                self.clear()
+                #print numpy.clip(int(x / self.width), 0, 7)
+                self.setPixel(numpy.clip(int(x / self.width), 0, 7), 7)
+
 
             self.updatePreview()
-            self.clock.tick(fps)
-
+            self.updateScreen()
+            self.clock.tick(self.fps)
 
     def updateScreen(self):
         # update the screen!
         pygame.display.update()  # Main
+
+
 
 
 if __name__ == "__main__":

@@ -100,3 +100,54 @@ while 1:
 
 cap.release()
 cv2.destroyAllWindows()
+
+
+
+
+
+
+    # def runSentences(self):
+    #     self.sentence = ""
+    #     deltaChars = 1
+    #     self.sentenceSurface = self.makeSentence(self.sentence)
+    #     loopCount = 0
+    #     self.fps = 16
+    #     self.running = True
+    #     self.sentenceBuffer = ""
+    #     self.crazyColorMode = False
+    #     while self.running:
+    #         for event in pygame.event.get():
+    #             if hasattr(event, 'key') and event.key == 27:
+    #                 self.running = False
+    #             if event.type == pygame.KEYDOWN:
+    #                 if (event.key == pygame.K_KP_MINUS):
+    #                     self.fps -= 1
+    #                     if (fps <= 0): fps = 1
+    #                     print("Speed: " + self.fps)
+    #                 elif (event.key == pygame.K_KP_PLUS):
+    #                     self.fps += 1
+    #                     print("Speed: " + self.fps)
+    #                 else:
+    #                     self.sentenceBuffer += chr(event.key)
+    #         prevTime = pygame.time.get_ticks()
+    #
+    #         self.drawSurface(self.sentenceSurface)
+    #
+    #         self.sentenceSurface.scroll(dx=-deltaChars)
+    #         loopCount += 1
+    #         # If a char just passed by
+    #         if (loopCount % 6 == 0):
+    #             #if self.crazyColorMode:
+    #                 #self.backgroundColor = self.randomColor() #Uncomment to make every character have a different background color
+    #             self.sentence = self.sentence + self.sentenceBuffer
+    #             self.sentence = self.sentence[deltaChars:]
+    #             self.sentenceBuffer = ""
+    #             self.sentenceSurface = self.makeSentence(self.sentence)
+    #
+    #         self.updatePreview()
+    #        self.clock.tick(self.fps)
+
+
+
+
+

@@ -5,7 +5,6 @@ import time
 from Canopto import Canopto
 from PersonTracker import PersonTracker
 
-
 class Message:
     def __init__(self):
         self.id = ""
@@ -20,17 +19,13 @@ class Message:
         self.body = body
 
     def __str__(self):
-        return (self.id, self.phone_from, self.phone_to, self.body)
+        return str((self.id, self.phone_from, self.phone_to, self.body))
 
 
 def main():
     #Initialize Canopto Display
     display = Canopto(8, 8)
-    display.start()
-
-    #Initialize Person Tracker
-    tracker = PersonTracker()
-    PersonTracker.start(tracker)
+    Canopto.start(display)
 
     CONFIG_PATH = '/home/aoi/code/canopto_config.json'
     # API KEYS FOUND HERE: https://www.twilio.com/user/account  (NOT  under DEV TOOLS > API KEYS)
@@ -46,31 +41,63 @@ def main():
 
     processedMessages = []
     processedIDs = []
-    toProcess = []
-    running = True
 
-    while (running):
-        for message in client.messages.list():
+
+    while (display.tracker.running and display.running):
+        #if tracker.frameCounter == 10:
+            #tracker.resetToMotion = True
+            #print "reset to motion"
+        messages = client.messages.list(date_sent=datetime.datetime.today())
+        for message in messages:
             if (message.direction == "inbound"):
-                #New message from today that hasn't already been processed
-                currentMessage = Message(message.sid, message.from_, message.to, message.body)
-                if message.sid not in processedIDs and datetime.datetime.today() < message.date_created:
-                    display.drawSentence(message.body)
+                #New message from now onward that hasn't already been processed
+                if message.sid not in processedIDs and datetime.datetime.now() <= message.date_created:
+                    currentMessage = Message(message.sid, message.from_, message.to, message.body)
+                    print "New Text Message:", currentMessage
+
+                    #print(len(message.body))
+                    #if len(message.body) > 70:         #Large text messages get split up, also blocks the display
+                    #    continue
+                    if (message.body.lower() == "reset" or message.body.lower() == "r") and display.mode == "text":
+                        display.tracker.resetTrackingPosition()
+                        display.drawSentence(str(display.tracker.reportPosition()) + "  ")
+                        #pass
+                    elif (message.body.lower() == "print" or message.body.lower() == "p") and display.mode == "text":
+                        display.drawSentence(str(display.tracker.reportPosition()) + "  ")
+                        #pass
+                    elif (message.body.lower() == "clear"):
+                        display.clear()
+                    elif message.body.lower() == "crazy" and display.mode == "text":
+                        display.crazyColorMode = not display.crazyColorMode     #Toggle Crazy Color Mode
+                    elif message.body.lower()[0:5] == "speed" and len(message.body) > 6:
+                        display.fps = int(message.body.split(' ')[1])
+                        if display.mode == "text":
+                            display.drawSentence("fps:" + str(display.fps))
+
+                    #elif message.body.lower() == "speed down":
+                    #    display.fps -= 1
+                    elif message.body.lower() == "track":
+                        display.mode = "track"
+                    elif message.body.lower() == "text":
+                        display.mode = "text"
+                    elif (message.body[0] == "0"):
+                        x, y = [int(x) for x in message.body[1:].split(',')]
+                        display.tracker.setTrackingPosition(x,y,30,30)
+                        display.drawSentence(str(display.tracker.reportPosition()) + "  ")
+                    elif message.body.lower() == "reset to motion":
+                        display.mode = "track"
+                        #display.tracker.resetToMotion = True
+                    elif message.body.lower()[0] == "w" and display.mode == "text":
+                        display.drawSentence(message.body[1:] + " ")
 
                     processedIDs.append(message.sid)
                     processedMessages.append(currentMessage)
-                    #Reposition the tracker
-                    #tracker.setTrackingPosition()
-                    #toProcess.append(currentMessage)
-                else:
-                    print("ignoring")
-                    print(processedMessages)
-                print(message.sid, message.body)
-                #print [m.__str__() for m in toProcess]
-        time.sleep(3)
+        time.sleep(1)
+
+    #Close down the main loops of the threads
+    #tracker.running = False
+    display.running = False
 
 
 if __name__ == "__main__":
     main()
-    #time.sleep(1)
-    #CANOPTO.drawSentence("Hello")
