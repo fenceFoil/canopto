@@ -47,6 +47,9 @@ class Canopto(threading.Thread):
         # Colors
         self.backgroundColor = self.toGamma(backgroundColor)
         self.fontColor = self.toGamma(fontColor)
+        self.defaultBackgroundColor = self.toGamma(backgroundColor)
+        self.defaultFontColor = self.toGamma(fontColor)
+
         self.crazyColorMode = False
 
         # Only works for 8 columns
@@ -57,8 +60,8 @@ class Canopto(threading.Thread):
         self.bs = blinkstick.BlinkStickPro(width * height, 0, 0, 0.002, 255)
         self.bs.connect()
 
-        #self.mode = "text"
-        self.mode = "track"
+        self.mode = "text"
+        #self.mode = "track"
 
         # PyGame is used for drawing
         self.running = True
@@ -184,6 +187,10 @@ class Canopto(threading.Thread):
                     surface.set_at([x, y], replace_color)
         return surface
 
+    def resetColors(self):
+        self.backgroundColor = self.defaultBackgroundColor
+        self.fontColor = self.defaultFontColor
+
     def drawSentence(self, string):
         self.sentenceBuffer = "  " + str(string)
 
@@ -191,13 +198,13 @@ class Canopto(threading.Thread):
         self.sentence = " "
         self.sentenceBuffer = "  "
         self.matrix = numpy.zeros((self.height, self.width), dtype=(float, 3))
-        self.SCREEN.fill(self.BLACK)
+        #self.SCREEN.fill(self.BLACK)
         self.updateScreen()
         self.updatePreview()
 
     def run(self):
         print "Running Canopto"
-
+        self.clear()
 
         #Initialize Person Tracker
         self.tracker = PersonTracker()
@@ -209,6 +216,7 @@ class Canopto(threading.Thread):
         self.sentenceBuffer = ""
         self.sentence = ""
         deltaChars = 1
+        self.crazyColorMode = False
         self.sentenceSurface = self.makeSentence(self.sentence)
         loopCount = 0
 
@@ -225,8 +233,8 @@ class Canopto(threading.Thread):
                 loopCount += 1
                 # If a char just passed by
                 if (loopCount % 6 == 0):
-                    #if self.crazyColorMode:
-                        #self.backgroundColor = self.randomColor() #Uncomment to make every character have a different background color
+                    if self.crazyColorMode:
+                        self.backgroundColor = self.randomColor() #Uncomment to make every character have a different background color
                     self.sentence = self.sentence + self.sentenceBuffer
                     self.sentence = self.sentence[deltaChars:]
                     self.sentenceBuffer = ""
@@ -238,14 +246,19 @@ class Canopto(threading.Thread):
                     self.tracker.resetToMotion = True
                 #print "Person Location:", self.tracker.personLocation
                 x, y = self.tracker.personLocation
-                self.clear()
-                #print numpy.clip(int(x / self.width), 0, 7)
-                self.setPixel(numpy.clip(int(x / self.width), 0, 7), 7)
+                #self.clear()
+                self.matrix = numpy.zeros((self.height, self.width), dtype=(float, 3))
+                #x varies from 0 to 255 so make bins of ~30 by dividing 255 by the width of the display(8 cans)
+                self.setPixel(numpy.clip(int((x) / (255/self.width+2)), 0, 7), 5)
+                self.setPixel(numpy.clip(int((x) / (255/self.width+2)), 0, 7), 6)
+                self.setPixel(numpy.clip(int((x) / (255/self.width+2)), 0, 7), 7)
+
 
 
             self.updatePreview()
             self.updateScreen()
             self.clock.tick(self.fps)
+        self.clear()
 
     def updateScreen(self):
         # update the screen!

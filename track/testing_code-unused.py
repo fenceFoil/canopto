@@ -102,10 +102,6 @@ cap.release()
 cv2.destroyAllWindows()
 
 
-
-
-
-
     # def runSentences(self):
     #     self.sentence = ""
     #     deltaChars = 1

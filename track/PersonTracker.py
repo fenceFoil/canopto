@@ -22,11 +22,11 @@ class PersonTracker(threading.Thread):
         self.crop_x = [805, 1050]
 
         #Video capture mode
-        #self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(0)
         #Testing videos at different times of the day (lighting was primary problem)
-        self.cap = cv2.VideoCapture('test_video/trimmed_movement.mkv')  # use 0 as parameter to select first webcam
+        #self.cap = cv2.VideoCapture('test_video/trimmed_movement.mkv')  # use 0 as parameter to select first webcam
         #self.cap = cv2.VideoCapture('test_video/trimmed_courtyard_movement_midday.mkv')
-        #self.cap = cv2.VideoCapture('test_video/night_training.mkv')
+        self.cap = cv2.VideoCapture('test_video/night_training.mkv')
         #self.cap = cv2.VideoCapture('test_video/night_training_2.mp4')
 
         # Webcam Settings
@@ -39,6 +39,7 @@ class PersonTracker(threading.Thread):
 
         #Set to true to reorient the trackign window onto the section of the image that last moved
         self.resetToMotion = False
+        self.resetBS = False
 
         self.running = True
 
@@ -81,17 +82,18 @@ class PersonTracker(threading.Thread):
 
         # Crop
         frame = frame[self.crop_y[0]:self.crop_y[1], self.crop_x[0]:self.crop_x[1]]
+
+        #Helps with detecing during daylight but causes excess noise
         #bFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         #cv2.equalizeHist(bFrame, bFrame)
+        #frame = bFrame
+        #frame = cv2.cvtColor(frame,bFrame,cv2.COLOR_GRAY2BGR)
+
         #cv2.dilate(bFrame,(9,9),bFrame)
         fgmask = fgbg.apply(frame)
         cv2.medianBlur(fgmask, 13, fgmask)
         frame = fgmask
         #frame = cv2.normalize(frame,frame, alpha=0,norm_type=cv2.NORM_MINMAX, beta = 255)
-
-
-        #Set the initialROI to the initial point of movement
-
 
         #Image Processing
         #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -131,21 +133,34 @@ class PersonTracker(threading.Thread):
 
             # Crop
             frame = frame[self.crop_y[0]:self.crop_y[1], self.crop_x[0]:self.crop_x[1]]
-            #bFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            #cv2.equalizeHist(bFrame, bFrame)
+            rawCrop = frame
+
             #cv2.dilate(bFrame,(9,9),bFrame)
             fgmask = fgbg.apply(frame)
+            #cv2.GaussianBlur(fgmask,(9,9),2, fgmask)
+            #frame = cv2.cvtColor(fgmask, cv2.COLOR_BGR2GRAY)
             cv2.medianBlur(fgmask, 13, fgmask)
+            #cv2.equalizeHist(fgmask, frame)
             frame = fgmask
-            #frame = cv2.normalize(frame,frame, alpha=0,norm_type=cv2.NORM_MINMAX, beta = 255)
+
+            #bFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+
+            #bFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            #cv2.equalizeHist(bFrame, bFrame)
+            #frame = bFrame
+            frame = cv2.normalize(frame,frame, alpha=0,norm_type=cv2.NORM_MINMAX, beta = 255)
 
             #
+            if self.resetBS:
+                fgbg = cv2.BackgroundSubtractorMOG2()
+                self.resetBS = False
+
             if self.resetToMotion:
-                print "PersonTracker file: Resetting to motion"
-                #fgbg = cv2.BackgroundSubtractorMOG2()
+                #print "PersonTracker file: Resetting to motion"
                 points = [np.intersect1d(np.where((frame > 100))[0], np.where((frame < 150))[0]), np.intersect1d(np.where((frame > 100))[1], np.where((frame < 150))[1])]
-                print points
                 if (len(points[0]) > 0 and len(points[1]) > 0):
+                    print points
                     self.resetToMotion = False
                     print "Now tracking:", points[0][1], points[1][1]
                     self.setTrackingPosition(points[1][1], points[0][1], 40, 40)
@@ -174,6 +189,7 @@ class PersonTracker(threading.Thread):
 
                 img2 = cv2.rectangle(frame, (x, y), (x + w, y + h), 255, 2)
                 cv2.imshow('img2', frame)
+                #cv2.imshow('crop', rawCrop)
                 #cv2.imshow('bframe', bFrame)
                 #cv2.imshow('fgmask', fgmask)
 
