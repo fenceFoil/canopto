@@ -27,19 +27,17 @@ cans = Canopto (display_size[0], display_size[1], True, True)
 
 def randomize_frame (input_frame):
 	input_frame = [[randint(0, 1)
-		for x in range (display_size[0])] 
-		for y in range (display_size[1])]
+		for x in range (len(input_frame[0]))] 
+		for y in range (len(input_frame))]
+	# input_frame = [[randint(0, 1)
+		# for x in range (display_size[0])] 
+		# for y in range (display_size[1])]
 	return input_frame
 	
 def calculate_frame (last_frame):
-	#print ("CALCULATE_FRAME")
-	#print ("Input:")
-	#print (last_frame)
-
 	# Make an empty new frame
 	width = len(last_frame[0])
 	height = len(last_frame)
-	#new_frame = [[0] * width] * height
 	new_frame = [x[:] for x in last_frame]
 	
 	# Iterate over each cell in last_frame
@@ -91,6 +89,18 @@ def check_for_cycles (history, new_frame):
 		if (frames_equal(frame, new_frame)):
 			return True
 	return False
+	
+def no_living_cells (frame):
+	if sum(map(sum, frame)) <= 0:
+		return True
+	else:
+		return False
+		
+def num_living_cells (frame):
+	return sum(map(sum, frame))
+	
+def ratio_living_cells (frame):
+	return (num_living_cells(frame) / (len(frame)*len(frame[0])))
 
 def frame_to_surface (frame, fg, alpha=255):
 	"""Converts a 2D frame of values from 0 to 1 to a surface with fg 
@@ -146,12 +156,12 @@ while True:
 			for event in pygame.event.get():
 				if event.type==QUIT:
 					sys.exit(0)
-			time.sleep(0.01)
+			time.sleep(0.02 * ratio_living_cells(curr_frame))
 		
 		cans.drawSurface(new_texture)
 		cans.update()
 				
-		time.sleep(0.75)
+		time.sleep(1.1 * ratio_living_cells(curr_frame))
 		
 		# Log previous frame into last frame and the history
 		history.append(curr_frame)
@@ -165,6 +175,10 @@ while True:
 			if check_for_cycles(history, curr_frame):
 				# Start a frames countdown to next simulation
 				remaining_frames = 7
+				
+				# If there are no cells turned on, hurry it up a bit
+				if (no_living_cells(curr_frame)):
+					remaining_frames = 4
 		
 		# Update remaining frames
 		if remaining_frames != None:
