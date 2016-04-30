@@ -26,7 +26,8 @@ while True:
 			color_index = random()
 		
 			rand_color = Color(0, 0, 0, 0)
-			rand_color.hsla = (max(60, 20+(80+40)*color_index), 100, max(50-50*color_index, 5), 100)
+			rand_color.hsla = (40 + (x+y*8)*2, 100, max(50-50*color_index, 5), 100)
+			#rand_color.hsla = (max(40, 20+(60+40)*color_index), 100, max(50-50*color_index, 5), 100)
 			new_image.set_at((x, y), rand_color)
 	
 	# Fade onto old image
