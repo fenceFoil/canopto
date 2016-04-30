@@ -25,13 +25,13 @@ while True:
 		for y in range (0, display_size[1]):
 			# Show either gold or a random green
 			rand_color = Color(0, 0, 0, 0)
-			if (random() > 0.8):
+			if (random() > 0.7):
 				rand_color.hsla = (50, 100, 50, 100)
 			else:
 				# Green
-				brightness = 10
+				brightness = 18
 				if (random() > 0.4):
-					brightness = 25
+					brightness = 28
 				rand_color.hsla = (88 + (104 - 88) * random(), 100, brightness, 100)
 			
 			new_image.set_at((x, y), rand_color)
