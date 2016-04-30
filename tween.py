@@ -335,7 +335,7 @@ def customTween(formula_string):
           "b+c*(26.65*tc*ts + -91.5925*ts*ts + 115.285*tc + -62.89*ts + 13.5475*t"
     '''
     def custom(t,b,c,d):
-	t/=d
+        t/=d
         ts=t*t
         tc=ts*t
         return eval(formula_string)
