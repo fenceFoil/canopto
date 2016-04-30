@@ -36,7 +36,13 @@ while True:
 			tween(easeInOutCubic, steps/7, 0, steps, True, False)):
 		
 		zoom = x / float(steps);
-		frame = get_window_at_pos (smoothscale(base_image, (round((base_image.get_width()-display_size[0]) * zoom + display_size[0]), round((base_image.get_height()-display_size[1]) * zoom + display_size[1]))), pos)
+		frame = get_window_at_pos (
+			smoothscale(base_image, 
+				(
+					int(round((base_image.get_width()-display_size[0]) * zoom + display_size[0])), 
+					int(round((base_image.get_height()-display_size[1]) * zoom + display_size[1]))
+				)),
+			pos)
 
 		cans.drawSurface(frame)
 		cans.update()
