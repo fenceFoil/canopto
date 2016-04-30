@@ -23,11 +23,17 @@ while True:
 	new_image = Surface(display_size)
 	for x in range (0, display_size[0]):
 		for y in range (0, display_size[1]):
-			color_index = random()
-		
+			# Show either gold or a random green
 			rand_color = Color(0, 0, 0, 0)
-			rand_color.hsla = (40 + (x+y*8)*2, 100, max(50-50*color_index, 5), 100)
-			#rand_color.hsla = (max(40, 20+(60+40)*color_index), 100, max(50-50*color_index, 5), 100)
+			if (random() > 0.8):
+				rand_color.hsla = (50, 100, 50, 100)
+			else:
+				# Green
+				brightness = 10
+				if (random() > 0.4):
+					brightness = 25
+				rand_color.hsla = (88 + (104 - 88) * random(), 100, brightness, 100)
+			
 			new_image.set_at((x, y), rand_color)
 	
 	# Fade onto old image
