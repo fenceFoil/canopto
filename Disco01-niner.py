@@ -6,6 +6,7 @@ from pygame import *
 from pygame.locals import *
 import time
 from random import randint
+from random import random
 from colorsys import *
 import sys
 
@@ -22,8 +23,10 @@ while True:
 	new_image = Surface(display_size)
 	for x in range (0, display_size[0]):
 		for y in range (0, display_size[1]):
+			color_index = random()
+		
 			rand_color = Color(0, 0, 0, 0)
-			rand_color.hsla = (randint(50, 140), 100, 50, 100)
+			rand_color.hsla = (60+80*color_index, 100, 50-45*color_index, 100)
 			new_image.set_at((x, y), rand_color)
 	
 	# Fade onto old image
