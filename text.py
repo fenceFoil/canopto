@@ -9,7 +9,6 @@ from colorsys import *
 import sys
 import json
 import datetime
-from twilio.rest import TwilioRestClient
 
 # scroll text across canopto. blocks. fg & bg are colors
 def scrollText (canopto, text, fg = (0xFF, 0x33, 0xFF), bg = (0x00, 0x00, 0x00, 0x00), font = "16bfZX", yOffset = 2):
