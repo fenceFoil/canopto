@@ -19,7 +19,7 @@ cans = Canopto (display_size[0], display_size[1], True, True)
 def get_window_at_pos (baseImage, pos, windowSize=display_size):
 	return baseImage.subsurface(((baseImage.get_width() - windowSize[0])*pos[0], (baseImage.get_height() - windowSize[1])*pos[1]), windowSize)
 
-base_image = pygame.image.load("res/picture.png")
+base_image = pygame.image.load("res/sunflowers1.jpg")
 
 # Zoom in on a position within a larger image slowly
 # Zoom back out
@@ -32,8 +32,8 @@ while True:
 	
 	steps = 100
 	for x in chain(
-			tween(easeInOutCubic, 0, steps/7, steps, True, False), 
-			tween(easeInOutCubic, steps/7, 0, steps, True, False)):
+			tween(easeInOutCubic, 0, steps*0.6, steps, True, False), 
+			tween(easeInOutCubic, steps*0.6, 0, steps, True, False)):
 		
 		zoom = x / float(steps);
 		frame = get_window_at_pos (
