@@ -17,7 +17,7 @@ def scrollText (canopto, text, fg = (0xFF, 0x33, 0xFF), bg = (0x00, 0x00, 0x00, 
 	#Habbo 12, offset 0
 	#16bfZX 16, offset 2
 	#surface = pygame.font.SysFont("16bfZX", 16).render(text, False, fg, bg)
-	surface = pygame.font.Font("res/"+font, 16).render(text, False, fg, bg)
+	surface = pygame.font.Font(font+".ttf", 16).render(text, False, fg, bg)
 	scrollSurface(canopto, surface, speed = 1.2, yOffset = 2)
 
 # speed is a multiplier of the default speed which is pretty good. Blocks until
